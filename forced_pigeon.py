@@ -20,6 +20,12 @@ OUTPUT_FILE = "mm-billi-pigeon.png"
 DPI = 300
 MARGIN = 1.0 * DPI
 FONT_SIZE = 13
+FONT_LIGHT = 'Aleo-Light.otf'
+FONT_DARK = 'Aleo-Bold.otf'
+# http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
+# e.g. fruchterman_reingold, grid_fruchterman_reingold, kamada_kawai, drl, large_graph
+LAYOUT_ALGORITHM = 'fruchterman_reingold'
+
 
 def class2Label(c):
     return c.split(":")[-1].upper()
@@ -63,8 +69,8 @@ with open(GRAPH_FILE) as f:
     graph = json.load(f)
     # normalize data
     for l in graph["links"]:
-        s = class2Label(l["source"])
-        t = class2Label(l["target"])
+        s = l["source"]
+        t = l["target"]
         links.append((s, t))
     # count frequencies of nodes
     # nodeCounter = collections.Counter(nodes)
@@ -97,7 +103,7 @@ print "Building graph, may take a while..."
 g = Graph()
 g.add_vertices(nodeCount)
 g.add_edges(edges)
-layout = g.layout("fruchterman_reingold")
+layout = g.layout(LAYOUT_ALGORITHM)
 
 # get bounds and convert to pixels
 xs = [p[0] for p in layout]
@@ -117,15 +123,15 @@ for i, p in enumerate(layout):
     if pData[pi][0] < 255 * 0.5:
         pigeon = True
     labels.append({
-        "label": nodes[i],
+        "label": class2Label(nodes[i]),
         "pigeon": pigeon,
         "point": (x, y)
     })
 
 # draw output file
 print "About to output file"
-fnt = ImageFont.truetype('Aleo-Light.otf', FONT_SIZE)
-fntBold = ImageFont.truetype('Aleo-Bold.otf', FONT_SIZE)
+fnt = ImageFont.truetype(FONT_LIGHT, FONT_SIZE)
+fntBold = ImageFont.truetype(FONT_DARK, FONT_SIZE)
 out = Image.new('RGB', (width, height), (255,255,255))
 d = ImageDraw.Draw(out)
 for l in labels:
