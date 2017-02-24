@@ -21,6 +21,9 @@ DPI = 300
 MARGIN = 1.0 * DPI
 FONT_SIZE = 13
 
+def class2Label(c):
+    return c.split(":")[-1].upper()
+
 def lim(value, bounds):
     if value < bounds[0]:
         return bounds[0]
@@ -60,8 +63,8 @@ with open(GRAPH_FILE) as f:
     graph = json.load(f)
     # normalize data
     for l in graph["links"]:
-        s = l["source"][6:].upper()
-        t = l["target"][6:].upper()
+        s = class2Label(l["source"])
+        t = class2Label(l["target"])
         links.append((s, t))
     # count frequencies of nodes
     # nodeCounter = collections.Counter(nodes)
