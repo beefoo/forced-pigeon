@@ -4,6 +4,10 @@
 #   pip install Pillow
 #   pip install python-igraph
 
+# Usage:
+#   python forced_pigeon.py -layout drl -output pigeon_grid_fruchterman_reingold.png
+
+import argparse
 import collections
 from igraph import *
 import json
@@ -13,10 +17,19 @@ from pprint import pprint
 import random
 import sys
 
+# input
+parser = argparse.ArgumentParser()
+# http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
+parser.add_argument('-layout', dest="LAYOUT_ALGORITHM", default="fruchterman_reingold", help="Layout algorithm, e.g. fruchterman_reingold, kamada_kawai, drl, large_graph")
+parser.add_argument('-output', dest="OUTPUT_FILE", default="mm-billi-pigeon.png", help="Path to output png file")
+
+# init input
+args = parser.parse_args()
+
 # config
 PIGEON_FILE = "pigeon.png"
 GRAPH_FILE = "graph/combined-billi.json"
-OUTPUT_FILE = "mm-billi-pigeon.png"
+OUTPUT_FILE = args.OUTPUT_FILE
 DPI = 300
 MARGIN = 1.0 * DPI
 FONT_SIZE = 13
@@ -24,8 +37,7 @@ FONT_LIGHT = 'Aleo-Light.otf'
 FONT_DARK = 'Aleo-Bold.otf'
 # http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
 # e.g. fruchterman_reingold, grid_fruchterman_reingold, kamada_kawai, drl, large_graph
-LAYOUT_ALGORITHM = 'fruchterman_reingold'
-
+LAYOUT_ALGORITHM = args.LAYOUT_ALGORITHM
 
 def class2Label(c):
     return c.split(":")[-1].upper()
@@ -74,7 +86,7 @@ with open(GRAPH_FILE) as f:
         links.append((s, t))
     # count frequencies of nodes
     # nodeCounter = collections.Counter(nodes)
-    # links = random.sample(links, 2000)
+    links = random.sample(links, 100)
     for link in links:
         nodes += list(link)
     # we're going to ignore nodes w/ no links
