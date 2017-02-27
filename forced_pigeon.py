@@ -10,6 +10,7 @@
 #   python forced_pigeon.py -layout kamada_kawai -output output/pigeon_kamada_kawai.png
 #   python forced_pigeon.py -edges True -output output/pigeon_fruchterman_reingold_user_edges.png
 #   python forced_pigeon.py -edges True -uedges False -output output/pigeon_fruchterman_reingold_edges.png
+#   python forced_pigeon.py -fontsize 24 -output output/pigeon_fruchterman_reingold_24font.png
 
 import argparse
 import collections
@@ -28,7 +29,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-layout', dest="LAYOUT_ALGORITHM", default="fruchterman_reingold", help="Layout algorithm, e.g. fruchterman_reingold, kamada_kawai, drl, large_graph")
 parser.add_argument('-output', dest="OUTPUT_FILE", default="output/pigeon_fruchterman_reingold.png", help="Path to output png file")
 parser.add_argument('-edges', dest="EDGES", type=bool, default=False, help="Add edges?")
-parser.add_argument('-uedges', dest="USER_EDGES", type=bool, default=True, help="If edges, add just edges?")
+parser.add_argument('-uedges', dest="USER_EDGES", type=bool, default=False, help="If edges, add just edges?")
+parser.add_argument('-fontsize', dest="FONT_SIZE", type=int, default=18, help="Font size")
 
 # init input
 args = parser.parse_args()
@@ -39,7 +41,7 @@ GRAPH_FILE = "graph/combined-billi.json"
 OUTPUT_FILE = args.OUTPUT_FILE
 DPI = 300
 MARGIN = 1.0 * DPI
-FONT_SIZE = 16
+FONT_SIZE = args.FONT_SIZE
 FONT_LIGHT = 'Aleo-Light.otf'
 FONT_DARK = 'Aleo-Bold.otf'
 # http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
@@ -112,6 +114,14 @@ if os.path.isfile(preProcessedFilename):
             ny = l[2]
             x = int(round(nx * cWidth + MARGIN))
             y = int(round(ny * cHeight + MARGIN))
+
+            th = FONT_SIZE
+            tw = FONT_SIZE * 20
+            if x > (width * 0.5):
+                tp = (x - tw * norm(x, (width * 0.5, width)), y - th/2)
+            else:
+                tp = (x, y - th/2)
+
             pigeon = False
             pi = int(y * width + x)
             if pData[pi][0] < 255 * 0.5:
@@ -119,7 +129,7 @@ if os.path.isfile(preProcessedFilename):
             labels.append({
                 "label": class2Label(nodes[i]),
                 "pigeon": pigeon,
-                "point": (x, y)
+                "point": tp
             })
 
 # process graph from scratch
@@ -145,12 +155,20 @@ else:
         y = int(round(ny * cHeight + MARGIN))
         pigeon = False
         pi = int(y * width + x)
+
+        th = FONT_SIZE
+        tw = FONT_SIZE * 100
+        if x > (width * 0.5):
+            tp = (x - tw * norm(x, (width * 0.5, width)), y - th/2)
+        else:
+            tp = (x, y - th/2)
+
         if pData[pi][0] < 255 * 0.5:
             pigeon = True
         labels.append({
             "label": class2Label(nodes[i]),
             "pigeon": pigeon,
-            "point": (x, y)
+            "point": tp
         })
         preprocessedData.append([i, nx, ny])
 
@@ -178,11 +196,7 @@ for l in labels:
     f = fnt
     if l["pigeon"]:
         f = fntBold
-    # calculate center of text
-    tw, th = d.textsize(l["label"])
-    (tx, ty) = l["point"]
-    tp = (tx - tw/2, ty - th/2)
-    d.text(tp, l["label"], font=f, fill=(0,0,0))
+    d.text(l["point"], l["label"], font=f, fill=(0,0,0))
 out.save(OUTPUT_FILE, "PNG")
 print "Saved to file %s" % OUTPUT_FILE
 
