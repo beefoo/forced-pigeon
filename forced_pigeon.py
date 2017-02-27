@@ -5,7 +5,9 @@
 #   pip install python-igraph
 
 # Usage:
-#   python forced_pigeon.py -layout drl -output output/pigeon_dlr.png
+#   python forced_pigeon.py -layout large_graph -output output/pigeon_large_graph.png
+#   python forced_pigeon.py -layout fruchterman_reingold -output output/pigeon_fruchterman_reingold.png
+#   python forced_pigeon.py -layout kamada_kawai -output output/pigeon_kamada_kawai.png
 
 import argparse
 import collections
@@ -22,6 +24,8 @@ parser = argparse.ArgumentParser()
 # http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
 parser.add_argument('-layout', dest="LAYOUT_ALGORITHM", default="fruchterman_reingold", help="Layout algorithm, e.g. fruchterman_reingold, kamada_kawai, drl, large_graph")
 parser.add_argument('-output', dest="OUTPUT_FILE", default="output/pigeon_fruchterman_reingold.png", help="Path to output png file")
+parser.add_argument('-edges', dest="EDGES", type=bool, default=False, help="Add edges?")
+
 
 # init input
 args = parser.parse_args()
@@ -32,12 +36,13 @@ GRAPH_FILE = "graph/combined-billi.json"
 OUTPUT_FILE = args.OUTPUT_FILE
 DPI = 300
 MARGIN = 1.0 * DPI
-FONT_SIZE = 13
+FONT_SIZE = 18
 FONT_LIGHT = 'Aleo-Light.otf'
 FONT_DARK = 'Aleo-Bold.otf'
 # http://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms
 # e.g. fruchterman_reingold, grid_fruchterman_reingold, kamada_kawai, drl, large_graph
 LAYOUT_ALGORITHM = args.LAYOUT_ALGORITHM
+EDGES = args.EDGES
 
 def class2Label(c):
     return c.split(":")[-1].upper()
@@ -140,12 +145,25 @@ for i, p in enumerate(layout):
         "point": (x, y)
     })
 
+# now draw the links
+if EDGES:
+    lines = []
+    for edge in edges:
+        p1i = edge[0]
+        p2i = edge[1]
+        p1 = labels[p1i]["point"]
+        p2 = labels[p2i]["point"]
+        lines.append([p1, p2])
+
 # draw output file
 print "About to output file"
 fnt = ImageFont.truetype(FONT_LIGHT, FONT_SIZE)
 fntBold = ImageFont.truetype(FONT_DARK, FONT_SIZE)
 out = Image.new('RGB', (width, height), (255,255,255))
 d = ImageDraw.Draw(out)
+if EDGES:
+    for line in lines:
+        d.line(line, fill=(200,200,200), width=1)
 for l in labels:
     f = fnt
     if l["pigeon"]:
